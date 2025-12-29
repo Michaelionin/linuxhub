@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Чат Linux-hub</title>
+    <style>
+        /* Базовые стили */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px;
+            transition: all 0.3s;
+        }
+        #chat-box {
+            height: 400px;
+            border: 1px solid;
+            overflow-y: auto;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .nickname {
+            font-weight: bold;
+        }
+        .time {
+            font-size: 0.8em;
+        }
+        .hidden {
+            display: none;
+        }
+        a {
+            text-decoration: underline;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+        }
+        hr {
+            border: 1px solid;
+        }
+        .popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            padding: 20px;
+            text-align: center;
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .theme-selector {
+            display: inline-block;
+            margin-left: 10px;
+        }
+        select, button, input {
+            padding: 8px;
+            margin: 5px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .message-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .change-nick {
+            margin-left: 10px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        /* Темы */
+        /* 0. Без оформления */
+        .theme-none {
+            font-family: initial;
+        }
+        .theme-none * {
+            font-family: initial;
+        }
+        
+        /* 1. Оригинальная (черно-зелёная) */
+        .theme-default {
+            background-color: #000;
+            color: #0F0;
+        }
+        .theme-default a {
+            color: #0F0;
+        }
+        .theme-default a:hover {
+            color: #FFF;
+        }
+        .theme-default #chat-box,
+        .theme-default .popup {
+            background-color: #000;
+            border-color: #0F0;
+            color: #0F0;
+        }
+        .theme-default button,
+        .theme-default select,
+        .theme-default input {
+            background-color: #000;
+            color: #0F0;
+            border: 2px solid #0F0;
+        }
+        .theme-default .change-nick {
+            color: #0F0;
+        }
+        
+        /* 2. Черно-оранжевая */
+        .theme-orange {
+            background-color: #000;
+            color: #FF8C00;
+        }
+        .theme-orange a {
+            color: #FF8C00;
+        }
+        .theme-orange a:hover {
+            color: #FFD700;
+        }
+        .theme-orange #chat-box,
+        .theme-orange .popup {
+            background-color: #000;
+            border-color: #FF8C00;
+            color: #FF8C00;
+        }
+        .theme-orange button,
+        .theme-orange select,
+        .theme-orange input {
+            background-color: #000;
+            color: #FF8C00;
+            border: 2px solid #FF8C00;
+        }
+        
+        /* 3. Терминал Linux */
+        .theme-terminal {
+            background-color: #300A24;
+            color: #00FF00;
+        }
+        .theme-terminal a {
+            color: #00FF00;
+        }
+        .theme-terminal a:hover {
+            color: #FFFFFF;
+        }
+        .theme-terminal #chat-box,
+        .theme-terminal .popup {
+            background-color: #000;
+            border-color: #00FF00;
+            color: #00FF00;
+        }
+        .theme-terminal button,
+        .theme-terminal select,
+        .theme-terminal input {
+            background-color: #000;
+            color: #00FF00;
+            border: 2px solid #00FF00;
+        }
+        
+        /* 4. Midnight Commander */
+        .theme-mc {
+            background-color: #00007F;
+            color: #D0D0D0;
+        }
+        .theme-mc a {
+            color: #FFFF00;
+        }
+        .theme-mc a:hover {
+            color: #FFFFFF;
+        }
+        .theme-mc #chat-box,
+        .theme-mc .popup {
+            background-color: #00007F;
+            border-color: #D0D0D0;
+            color: #D0D0D0;
+        }
+        .theme-mc button,
+        .theme-mc select,
+        .theme-mc input {
+            background-color: #00007F;
+            color: #D0D0D0;
+            border: 2px solid #D0D0D0;
+        }
+        
+        /* 5. IRC */
+        .theme-irc {
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+        .theme-irc a {
+            color: #0000FF;
+        }
+        .theme-irc a:hover {
+            color: #FF0000;
+        }
+        .theme-irc #chat-box,
+        .theme-irc .popup {
+            background-color: #FFFFFF;
+            border-color: #000000;
+            color: #000000;
+        }
+        .theme-irc button,
+        .theme-irc select,
+        .theme-irc input {
+            background-color: #FFFFFF;
+            color: #000000;
+            border: 2px solid #000000;
+        }
+        
+        /* 6. ВКонтакте 2009 */
+        .theme-vk2009 {
+            background-color: #F0F0F0;
+            color: #2B587A;
+        }
+        .theme-vk2009 a {
+            color: #2B587A;
+        }
+        .theme-vk2009 a:hover {
+            color: #FF6600;
+        }
+        .theme-vk2009 #chat-box,
+        .theme-vk2009 .popup {
+            background-color: #FFFFFF;
+            border-color: #2B587A;
+            color: #000000;
+        }
+        .theme-vk2009 button,
+        .theme-vk2009 select,
+        .theme-vk2009 input {
+            background-color: #FFFFFF;
+            color: #2B587A;
+            border: 2px solid #2B587A;
+        }
+        
+        /* 7. ICQ */
+        .theme-icq {
+            background-color: #FFFFCC;
+            color: #000000;
+        }
+        .theme-icq a {
+            color: #0000FF;
+        }
+        .theme-icq a:hover {
+            color: #FF0000;
+        }
+        .theme-icq #chat-box,
+        .theme-icq .popup {
+            background-color: #FFFFFF;
+            border-color: #009900;
+            color: #000000;
+        }
+        .theme-icq button,
+        .theme-icq select,
+        .theme-icq input {
+            background-color: #FFFFFF;
+            color: #009900;
+            border: 2px solid #009900;
+        }
+        
+        /* 8. Советская телеграмма */
+        .theme-telegram {
+            background-color: #FFFFE0;
+            color: #000000;
+        }
+        .theme-telegram a {
+            color: #8B0000;
+        }
+        .theme-telegram a:hover {
+            color: #FF0000;
+        }
+        .theme-telegram #chat-box,
+        .theme-telegram .popup {
+            background-color: #FFFFE0;
+            border-color: #8B0000;
+            color: #000000;
+        }
+        .theme-telegram button,
+        .theme-telegram select,
+        .theme-telegram input {
+            background-color: #FFFFE0;
+            color: #8B0000;
+            border: 2px solid #8B0000;
+        }
+        
+        /* 9. Nokia 3310 */
+        .theme-3310 {
+            background-color: #6A8B3D;
+            color: #000000;
+        }
+        .theme-3310 a {
+            color: #0000FF;
+        }
+        .theme-3310 a:hover {
+            color: #6A8B3D;
+        }
+        .theme-3310 #chat-box,
+        .theme-3310 .popup {
+            background-color: #6A8B3D;
+            border-color: #000000;
+            color: #000000;
+        }
+        .theme-3310 button,
+        .theme-3310 select,
+        .theme-3310 input {
+            background-color: #6A8B3D;
+            color: #000000;
+            border: 4px solid #000000;
+        }
+    </style>
+</head>
+<body class="theme-default">
+     <img src= "http://linux.mypressonline.com/linuxhub.png">
+    <br>
+    <a href="http://linux.mypressonline.com">Главная</a>
+    &nbsp
+    <a href="http://linux.mypressonline.com/chat">Чат</a>
+    &nbsp
+    <a href="http://linux.mypressonline.com/gallery.php">Галерея</a>
+    &nbsp
+    <a href="http://linux.mypressonline.com/wiki">Вики</a>
+     &nbsp
+    <a href="http://linux.mypressonline.com/prislatstatiy.html">Прислать статью</a>
+          &nbsp
+    <a href="http://linux.mypressonline.com/fetchtok">FetchTok</a>
+    <hr>
+    <h1>Чат Linux-hub</h1>
+    <div id="chat-box"></div>
+    
+    <div id="nickname-container">
+        <input type="text" id="nickname" placeholder="Ваш никнейм (макс. 20 символов)">
+        <button onclick="setNickname()">Установить</button>
+    </div>
+    
+    <div id="message-container" class="hidden">
+        <div class="message-controls">
+            <input type="text" id="message" placeholder="Ваше сообщение (макс. 100 символов)">
+            <button onclick="sendMessage()">Отправить</button>
+            <button onclick="openPopup()">Правила</button>
+            <div class="theme-selector">
+                <select id="theme-selector" onchange="changeTheme()">
+                    <option value="default">Linux-hub</option>
+                    <option value="none">Без оформления</option>
+                    <option value="orange">Оранжевая</option>
+                    <option value="terminal">Терминал</option>
+                    <option value="mc">Midnight</option>
+                    <option value="irc">IRC</option>
+                    <option value="vk2009">ВК 2009</option>
+                    <option value="icq">ICQ</option>
+                    <option value="telegram">Телеграмма</option>
+                    <option value="3310">Nokia 3310</option>
+                </select>
+            </div>
+            <button onclick="changeNick()">Сменить ник</button>
+        </div>
+        <a href="smiles.html">Смайлы</a>
+        <a href="thememaker.html"> Редактор тем</a>
+    </div>
+ 
+    <div id="popup" class="popup hidden">
+        <h2>Добро пожаловать в чат!</h2>
+        <p>Здесь запрещено: говорить о Windows в положительном ключе, слать 18+, упоминать ЛГБТ, издеваться над религиозными или идеологическими чувствами собеседников, оскорблять других линуксоидов.</p>
+        <button onclick="closePopup()">Закрыть</button>
+    </div>
+
+    <script>
+        // Проверяем сохраненный никнейм и тему
+        let nickname = localStorage.getItem('chat_nickname');
+        let currentTheme = localStorage.getItem('chat_theme') || 'default';
+        
+        // Установка темы при загрузке
+        function applyTheme() {
+            document.body.className = 'theme-' + currentTheme;
+            document.getElementById('theme-selector').value = currentTheme;
+        }
+        
+        // Смена темы
+        function changeTheme() {
+            currentTheme = document.getElementById('theme-selector').value;
+            localStorage.setItem('chat_theme', currentTheme);
+            applyTheme();
+        }
+        
+        // Установка ника
+        function setNickname() {
+            const nickInput = document.getElementById('nickname');
+            const newNick = nickInput.value.trim().substring(0, 20);
+            
+            if(newNick) {
+                localStorage.setItem('chat_nickname', newNick);
+                nickname = newNick;
+                document.getElementById('nickname-container').classList.add('hidden');
+                document.getElementById('message-container').classList.remove('hidden');
+            }
+        }
+
+        // Смена ника
+        function changeNick() {
+            localStorage.removeItem('chat_nickname');
+            document.getElementById('nickname-container').classList.remove('hidden');
+            document.getElementById('message-container').classList.add('hidden');
+            document.getElementById('nickname').value = '';
+            document.getElementById('nickname').focus();
+        }
+
+        function getMessages() {
+            fetch('get_messages.php')
+                .then(response => response.text())
+                .then(data => {
+                    // Обработка смайлов
+                    const processedData = data.replace(/\*([^\*]+)\*/g, (match, p1) => {
+                        return `<img src="smiles/${p1}.gif" alt="${p1}" style="height: 1em; vertical-align: middle;">`;
+                    });
+                    document.getElementById('chat-box').innerHTML = processedData;
+                    const chatBox = document.getElementById('chat-box');
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    setTimeout(getMessages, 30000);
+                });
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value.trim().substring(0, 100);
+            if(!message || !nickname) return;
+            
+            fetch('send_message.php', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    nickname: nickname,
+                    message: message
+                })
+            }).then(() => {
+                document.getElementById('message').value = '';
+                getMessages();
+            });
+        }
+
+        function openPopup() {
+            document.getElementById("popup").classList.remove('hidden');
+        }
+
+        function closePopup() {
+            document.getElementById("popup").classList.add('hidden');
+        }
+
+        // Инициализация
+        window.onload = function() {
+            applyTheme();
+            if(nickname) {
+                document.getElementById('nickname-container').classList.add('hidden');
+                document.getElementById('message-container').classList.remove('hidden');
+            }
+            getMessages();
+        };
+    </script>
+        <hr>
+         <div class="buttons">
+        
+    </div>
+        
+        
+</body>
+</html>

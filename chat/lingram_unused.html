@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux-hub Telegram</title>
+    <style>
+        :root {
+            --tg-bg: #18222d;
+            --tg-primary: #2ea6ff;
+            --tg-secondary: #3e546a;
+            --tg-text: #ffffff;
+            --tg-text-secondary: #a8b5be;
+            --tg-bubble-out: #2b5278;
+            --tg-bubble-in: #2d3b4d;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--tg-bg);
+            color: var(--tg-text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background-color: var(--tg-secondary);
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            max-width: 75%;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .message-out {
+            align-self: flex-end;
+            background-color: var(--tg-bubble-out);
+            border-top-right-radius: 0;
+        }
+        
+        .message-in {
+            align-self: flex-start;
+            background-color: var(--tg-bubble-in);
+            border-top-left-radius: 0;
+        }
+        
+        .message-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-top: 4px;
+            color: var(--tg-text-secondary);
+        }
+        
+        .nickname {
+            font-weight: 500;
+            color: var(--tg-primary);
+        }
+        
+        .input-area {
+            padding: 10px;
+            background-color: var(--tg-secondary);
+            display: flex;
+            align-items: center;
+        }
+        
+        #message {
+            flex: 1;
+            padding: 10px;
+            border-radius: 20px;
+            border: none;
+            background-color: var(--tg-bg);
+            color: var(--tg-text);
+            margin-right: 10px;
+            outline: none;
+        }
+        
+        button {
+            background-color: var(--tg-primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none;
+        }
+        
+        .popup-content {
+            background-color: var(--tg-secondary);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+        
+        .popup h2 {
+            margin-top: 0;
+            color: var(--tg-primary);
+        }
+        
+        .popup button {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+        <script src="https://cdn.jsdelivr.net/npm/@mudcube/midi-js@latest/MIDI.js"></script>
+    <div class="header">
+        <h1>Linux-hub Telegram</h1>
+    </div>
+    
+    <div id="chat-box"></div>
+    
+    <div id="nickname-container" class="input-area">
+        <input type="text" id="nickname" placeholder="Ваш никнейм" maxlength="20">
+        <button onclick="setNickname()">Продолжить</button>
+    </div>
+    
+    <div id="message-container" class="input-area" style="display:none">
+        <input type="text" id="message" placeholder="Сообщение" maxlength="100">
+        <button onclick="sendMessage()">Отправить</button>
+        <button onclick="openPopup()" style="margin-left: 10px; background: var(--tg-secondary)">Правила</button>
+        <button onclick="playRandomMidi()" style="margin-left: 10px; background: var(--tg-secondary)">Случайная мелодия</button>
+    </div>
+    
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <h2>Правила чата</h2>
+            <p>Здесь запрещено: говорить о Windows в положительном ключе, слать 18+, упоминать ЛГБТ, издеваться над религиозными или идеологическими чувствами собеседников, оскорблять других линуксоидов.</p>
+            <button onclick="closePopup()">Понятно</button>
+        </div>
+    </div>
+<div id="midi-player" style="display: none;"></div>
+    <script>
+        // Проверяем сохраненный никнейм
+        let nickname = localStorage.getItem('chat_nickname');
+        
+        // Установка ника
+        function setNickname() {
+            const nickInput = document.getElementById('nickname');
+            const newNick = nickInput.value.trim().substring(0, 20);
+            
+            if(newNick) {
+                localStorage.setItem('chat_nickname', newNick);
+                nickname = newNick;
+                document.getElementById('nickname-container').style.display = 'none';
+                document.getElementById('message-container').style.display = 'flex';
+                document.getElementById('message').focus();
+                getMessages();
+            }
+        }
+
+        // Смена ника
+        function changeNick() {
+            localStorage.removeItem('chat_nickname');
+            document.getElementById('nickname-container').style.display = 'flex';
+            document.getElementById('message-container').style.display = 'none';
+            document.getElementById('nickname').value = '';
+            document.getElementById('nickname').focus();
+        }
+
+        function getMessages() {
+            fetch('get_messages.php')
+                .then(response => response.text())
+                .then(data => {
+                    const processedData = data.replace(/\*([^\*]+)\*/g, (match, p1) => {
+                        return `<img src="smiles/${p1}.gif" alt="${p1}" style="height: 1em; vertical-align: middle;">`;
+                    });
+                    
+                    const chatBox = document.getElementById('chat-box');
+                    chatBox.innerHTML = processedData;
+                    
+                    // Преобразуем сообщения в стиль Telegram
+                    const messages = chatBox.querySelectorAll('.message');
+                    messages.forEach(msg => {
+                        const nick = msg.querySelector('.nickname').textContent;
+                        const isOutgoing = nick === nickname;
+                        
+                        msg.className = isOutgoing ? 'message message-out' : 'message message-in';
+                        
+                        const time = msg.querySelector('.time');
+                        if(time) {
+                            const infoDiv = document.createElement('div');
+                            infoDiv.className = 'message-info';
+                            infoDiv.innerHTML = `${time.textContent}`;
+                            msg.appendChild(infoDiv);
+                            time.remove();
+                        }
+                    });
+                    
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    setTimeout(getMessages, 30000);
+                });
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value.trim().substring(0, 100);
+            if(!message || !nickname) return;
+            
+            fetch('send_message.php', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    nickname: nickname,
+                    message: message
+                })
+            }).then(() => {
+                document.getElementById('message').value = '';
+                getMessages();
+            });
+        }
+
+        function openPopup() {
+            document.getElementById("popup").style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = 'none';
+        }
+
+        // Инициализация
+        window.onload = function() {
+            if(nickname) {
+                document.getElementById('nickname').value = nickname;
+                document.getElementById('nickname-container').style.display = 'none';
+                document.getElementById('message-container').style.display = 'flex';
+                getMessages();
+            }
+            
+            // Обработка нажатия Enter
+            document.getElementById('nickname').addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') setNickname();
+            });
+            
+            document.getElementById('message').addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') sendMessage();
+            });
+        };
+            // Инициализация MIDI.js
+MIDI.loadPlugin({
+    soundfontPath: "https://cdn.jsdelivr.net/npm/@mudcube/midi-js@latest/SoundFonts/FluidR3_GM/",
+    onsuccess: function () {
+        console.log("MIDI.js успешно загружен");
+    }
+});
+
+// Функция для проигрывания случайного MIDI-файла
+function playRandomMidi() {
+    fetch('get_midi_files.php')
+        .then(response => response.json())
+        .then(urls => {
+            if (urls.length === 0) {
+                alert('Нет доступных MIDI-файлов');
+                return;
+            }
+
+            const randomUrl = urls[Math.floor(Math.random() * urls.length)];
+            document.getElementById('midi-player').style.display = 'block';
+
+            // Загружаем и проигрываем MIDI-файл
+            MIDI.Player.loadFile(randomUrl, function () {
+                MIDI.Player.start();
+            });
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки MIDI-файлов:', error);
+            alert('Не удалось загрузить MIDI-файлы');
+        });
+}
+    </script>
+</body>
+</html>

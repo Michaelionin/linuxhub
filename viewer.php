@@ -1,0 +1,124 @@
+<?php
+$file = isset($_GET['file']) ? $_GET['file'] : '';
+$allowedDir = 'statyi/';
+
+// Проверяем, что файл находится в разрешенной директории
+if (strpos(realpath($file), realpath($allowedDir)) !== 0) {
+    die('Доступ запрещен');
+}
+
+if (!file_exists($file)) {
+    die('Файл не найден');
+}
+
+$ext = pathinfo($file, PATHINFO_EXTENSION);
+$content = file_get_contents($file);
+?>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <img src= "http://linux.mypressonline.com/linuxhub.png">
+    <br>
+    <a href="http://linux.mypressonline.com">Главная</a>
+    &nbsp
+    <a href="/chat">Чат</a>
+    &nbsp
+    <a href="gallery.php">Галерея</a>
+    &nbsp
+    <a href="/wiki">Вики</a>
+     &nbsp
+    <a href="prislatstatiy.html">Прислать статью</a>
+       &nbsp
+    <a href="/fetchtok">FetchTok</a>
+    <hr>
+    <title>Просмотр статьи - Linux-hub</title>
+    <style>
+        /* Те же стили, что и в index.html */
+        body {
+            background-color: #000;
+            color: #0F0;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px;
+        }
+        a {
+            color: #0F0;
+            text-decoration: underline;
+        }
+        a:hover {
+            color: #FFF;
+        }
+        .back-link {
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        /* Стили Markdown */
+        .markdown-viewer {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .markdown-viewer h1, .markdown-viewer h2, .markdown-viewer h3 {
+            color: #0F0;
+            border-bottom: 1px solid #0F0;
+            padding-bottom: 5px;
+        }
+        .markdown-viewer h1 { font-size: 1.8em; }
+        .markdown-viewer h2 { font-size: 1.5em; }
+        .markdown-viewer h3 { font-size: 1.2em; }
+        .markdown-viewer p, .markdown-viewer li {
+            line-height: 1.5;
+        }
+        .markdown-viewer code {
+            background-color: #111;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .markdown-viewer pre {
+            background-color: #111;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        .markdown-viewer blockquote {
+            border-left: 3px solid #0F0;
+            padding-left: 10px;
+            margin-left: 0;
+            color: #0A0;
+        }
+        .markdown-viewer table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        .markdown-viewer table, .markdown-viewer th, .markdown-viewer td {
+            border: 1px solid #0F0;
+        }
+        .markdown-viewer th, .markdown-viewer td {
+            padding: 8px;
+        }
+        .markdown-viewer img {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Назад к списку статей</a>
+    
+    <div class="markdown-viewer">
+        <?php
+        if ($ext === 'md') {
+            // Для Markdown используем библиотеку Parsedown
+            require_once 'Parsedown.php';
+            $parsedown = new Parsedown();
+            echo $parsedown->text($content);
+        } else {
+            // Для обычных текстовых файлов
+            echo nl2br(htmlspecialchars($content));
+        }
+        ?>
+    </div>
+</body>
+</html>

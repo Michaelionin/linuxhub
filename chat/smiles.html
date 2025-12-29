@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Смайлы Linux-hub</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0F0;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 1px solid #0F0;
+            padding-bottom: 10px;
+        }
+        .smile-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .smile-table th, .smile-table td {
+            border: 1px solid #0F0;
+            padding: 10px;
+            text-align: center;
+        }
+        .smile-table th {
+            background-color: #001100;
+        }
+        .smile-table img {
+            max-width: 32px;
+            max-height: 32px;
+            vertical-align: middle;
+        }
+        .code {
+            font-family: monospace;
+            color: #0F0;
+            background-color: #001100;
+            padding: 2px 5px;
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Таблица смайлов Linux-hub</h1>
+    
+    <table class="smile-table">
+        <thead>
+            <tr>
+                <th>Смайл</th>
+                <th>Код</th>
+                <th>Как использовать</th>
+            </tr>
+        </thead>
+        <tbody id="smiles-container">
+            <!-- Смайлы будут загружены сюда -->
+        </tbody>
+    </table>
+
+    <div class="buttons">
+        
+    </div>
+
+    <script>
+        // Получаем список смайлов из папки smiles
+        fetch('get_smiles.php')
+            .then(response => response.json())
+            .then(smiles => {
+                const container = document.getElementById('smiles-container');
+                
+                smiles.forEach(smile => {
+                    const row = document.createElement('tr');
+                    
+                    // Изображение смайла
+                    const imgCell = document.createElement('td');
+                    const img = document.createElement('img');
+                    img.src = `smiles/${smile}`;
+                    img.alt = smile;
+                    imgCell.appendChild(img);
+                    
+                    // Код смайла (без расширения)
+                    const codeCell = document.createElement('td');
+                    const codeName = smile.replace(/\..+$/, '');
+                    codeCell.innerHTML = `<span class="code">*${codeName}*</span>`;
+                    
+                    // Пример использования
+                    const usageCell = document.createElement('td');
+                    usageCell.textContent = `Напишите *${codeName}* в чате`;
+                    
+                    row.appendChild(imgCell);
+                    row.appendChild(codeCell);
+                    row.appendChild(usageCell);
+                    
+                    container.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки смайлов:', error);
+                document.getElementById('smiles-container').innerHTML = `
+                    <tr>
+                        <td colspan="3" style="color: #F00;">Не удалось загрузить смайлы. Проверьте папку smiles.</td>
+                    </tr>
+                `;
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прислать статью - Linux-hub</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0F0;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px;
+        }
+        a {
+            color: #0F0;
+            text-decoration: underline;
+        }
+        a:hover {
+            color: #FFF;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+        }
+        hr {
+            border: 1px solid #0F0;
+        }
+        form {
+            margin: 20px auto;
+            max-width: 500px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, textarea {
+            background-color: #000;
+            color: #0F0;
+            border: 1px solid #0F0;
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        button {
+            background-color: #000;
+            color: #0F0;
+            border: 1px solid #0F0;
+            padding: 5px 15px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0F0;
+            color: #000;
+        }
+        .message {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #0F0;
+        }
+        .file-types {
+            font-size: 12px;
+            color: #0A0;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+     <img src= "http://linux.mypressonline.com/linuxhub.png">
+    <br>
+    <a href="http://linux.mypressonline.com">Главная</a>
+    &nbsp
+    <a href="/chat">Чат</a>
+    &nbsp
+    <a href="gallery.php">Галерея</a>
+    &nbsp
+    <a href="/wiki">Вики</a>
+     &nbsp
+    <a href="prislatstatiy.html">Прислать статью</a>
+         &nbsp
+    <a href="/fetchtok">FetchTok</a> 
+    <hr>
+    <h1>Прислать статью</h1>
+    
+    <p><a href="/">На главную</a></p>
+    
+   
+    
+    <form action="upload_article.php" method="post" enctype="multipart/form-data">
+        <label for="nickname">Ваш ник:</label>
+        <input type="text" id="nickname" name="nickname" required>
+        
+        <label for="email">Ваш e-mail:</label>
+        <input type="email" id="email" name="email" required>
+        
+        <label for="article">Файл статьи (.txt или .md):</label>
+        <input type="file" id="article" name="article" accept=".txt,.md" required>
+        <div class="file-types">Поддерживаемые форматы: .txt (текст) или .md (Markdown)</div>
+        
+        <button type="submit">Отправить статью</button>
+    </form>
+    
+    <hr>
+    <img src="polifagus .png">
+    Внимание! Перед публикацией на сайт статьи 
+    проходят модерацию для избежания спам-атак!
+    <hr>
+    <div class="buttons">
+        
+    </div>
+
+    <script>
+        // Показываем сообщение об успешной отправке, если есть параметр status=success в URL
+        if (window.location.search.includes('status=success')) {
+            const message = document.createElement('div');
+            message.className = 'message';
+            message.textContent = 'Статья успешно отправлена! Спасибо за ваш вклад!';
+            document.querySelector('form').before(message);
+        }
+    </script>
+</body>
+</html>
